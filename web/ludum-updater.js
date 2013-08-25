@@ -1,9 +1,9 @@
-define(['./utils','./vector','./linesegment','ludum-collision','minigame-touchtheball'],function(utils,Vector,LineSegment,collision,touchtheball) {
+define(['./utils','./vector','./linesegment','ludum-constants','ludum-collision','ludum-minigames'],function(utils,Vector,LineSegment,constants,collision,minigames) {
 	function initializeGame() {
 		return {
 			frame: 0,
 			players: [],
-			state: initializeMinigameState(null)
+			state: initializeWaitState(null,30*1)
 		};
 	}
 
@@ -12,7 +12,8 @@ define(['./utils','./vector','./linesegment','ludum-collision','minigame-touchth
 			x: 400, y: 300,
 			vx: 0, vy: 0,
 			keys: {},
-			clientid: clientid
+			clientid: clientid,
+			score: 0
 		};
 	}
 
@@ -24,69 +25,105 @@ define(['./utils','./vector','./linesegment','ludum-collision','minigame-touchth
 		}
 	}
 
-	var minigames = {
-		'touchtheball': touchtheball
-	};
-	function pickMinigameType(state) {
-		return 'touchtheball';
+	function pickMinigameType(frame) {
+		return utils.randomElement(frame,Object.keys(minigames));
 	}
 
-	var collisionlines = collision.createBox([
-		new Vector(0,0),
-		new Vector(0,600),
-		new Vector(800,600),
-		new Vector(800,0)
-	]);
-
-	function getCollisionLines(state) {
-		return collisionlines;
+	function getCollisionLines(gamestate) {
+		var r = constants.outerbox;
+		if (gamestate.state.type === 'minigame' && minigames[gamestate.state.state.type].collisionlines) {
+			r = r.concat(minigames[gamestate.state.state.type].collisionlines);
+		}
+		return r;
 	}
 
-	function initializeMinigameState(gamestate) {
-		var minigameType = pickMinigameType(gamestate && gamestate.frame || 0)
+	function initializeMinigameState(gamestate,minigameState) {
 		return {
 			type: 'minigame',
-			state: minigames[minigameType].initialize(gamestate && gamestate.players || [])
+			time: 30*10,
+			state: minigameState
 		};
 	}
 
-	function updateMinigameState(gamestate,state) {
+	function updateMinigameState(gamestate,state,playercollisions) {
+		if (state.time === 1) {
+			return initializePostgameState(gamestate);
+		}
 		return {
 			type: 'minigame',
-			state: minigames[state.state.type].update(gamestate, state.state)
+			time: state.time-1,
+			state: minigames[state.state.type].update(gamestate, state.state,playercollisions)
 		};
 	}
 
 	function initializePostgameState(gamestate) {
 		return {
 			type: 'postgame',
+			time: 30*3,
 			scores: minigames[gamestate.state.state.type].getScores(gamestate.state.state)
 		};
 	}
 
 	function updatePostgameState(gamestate,state) {
-		return state;
+		if (state.time === 1) {
+			return initializePregameState(gamestate);
+		}
+		return {
+			type: state.type,
+			scores: state.scores.map(utils.identity),
+			time: state.time-1
+		};
+	}
+
+	function initializePregameState(gamestate) {
+		var minigameType = pickMinigameType(gamestate && gamestate.frame || 0);
+		var minigameState = minigames[minigameType].initialize(gamestate);
+		return {
+			type: 'pregame',
+			time: 30*3,
+			minigameState: minigameState
+		};
+	}
+
+	function updatePregameState(gamestate,state) {
+		if (state.time === 1) {
+			return initializeMinigameState(state.minigame,state.minigameState);
+		}
+		return {
+			type: state.type,
+			minigameState: state.minigameState,
+			time: state.time-1
+		};
+	}
+
+	function initializeWaitState(gamestate,time) {
+		return {
+			type: 'wait',
+			time: time
+		};
+	}
+
+	function updateWaitState(gamestate,state) {
+		if (state.time === 1) {
+			return initializePregameState(gamestate);
+		}
+		return {
+			type: state.type,
+			time: state.time-1
+		};
 	}
 
 	var stateUpdaters = {
-		'postgame': updatePostgameState,
-		'minigame': updateMinigameState
+		'wait': updateWaitState,
+		'pregame': updatePregameState,
+		'minigame': updateMinigameState,
+		'postgame': updatePostgameState
 	};
 
 	function updateGame(oldstate,events) {
 		var state = utils.deepClone(oldstate);
 
 		state.frame++;
-		var totalSeconds = state.frame / 30;
-		//  minigame    postgame
-		// |____10_____|_3_|
-		if (totalSeconds % 13 === 0) {
-			state.state = initializeMinigameState(oldstate);
-		} else if (totalSeconds % 13 === 10) {
-			state.state = initializePostgameState(oldstate);
-		} else {
-			state.state = stateUpdaters[oldstate.state.type](oldstate, oldstate.state);
-		}
 
 		// Handle events.
 		events.forEach(function(event) {
@@ -143,13 +180,32 @@ define(['./utils','./vector','./linesegment','ludum-collision','minigame-touchth
 		// Collision
 		var collisionLines = getCollisionLines(state);
 		var collisions = collision.handleCollision(state.players,collisionLines);
+		var boxcollisions = {};
 		collisions.forEach(function(pair) {
 			var player = pair[0];
 			var playerCollisions = pair[1];
+			boxcollisions[player.clientid] = [];
 			player.onground = playerCollisions.reduce(function(result,collision) {
+				if (collision.object.box !== undefined && collision.normal.dot(0,1) < 0) {
+					boxcollisions[player.clientid].push(collision.object);
+				}
 				return result || collision.normal.dot(0,1) < 0;
 			},false);
 		});
+
+		state.state = stateUpdaters[oldstate.state.type](oldstate, oldstate.state, boxcollisions);
+		if (state.state.type !== oldstate.state.type) {
+			switch(state.state.type) {
+				case 'postgame':
+					state.state.scores.forEach(function(score) {
+						var player = findPlayer(state,score.clientid);
+						if (player) {
+							player.score += score.score;
+						}
+					});
+				break;
+			}
+		}
 
 		return state;
 	}

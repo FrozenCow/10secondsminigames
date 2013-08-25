@@ -15,21 +15,21 @@ define(['utils','ludum-constants','ludum-collision','vector'],function(utils,con
 		var f = gamestate.frame;
 		var players = gamestate.players;
 		return {
-			type: 'touchtheball',
+			type: 'avoidtheballs',
 			balls: utils.repeat(function(i) {
 				var b = f+i*4;
 				return {
 					x: utils.random(b+0)*800,
-					y: utils.random(b+1)*400,
-					vx: utils.randomSpeed(b+2,5,10),
+					y: utils.random(b+1)*500,
+					vx: utils.randomSpeed(b+2,5,6),
 					vy: -Math.abs(utils.randomSpeed(b+3,5,10)),
-					color: constants.colors[i]
+					color: constants.colors[i%5]
 				};
-			},20),
+			},15),
 			players: players.map(function(player) {
 				return {
 					clientid: player.clientid,
-					touched: false
+					status: true
 				};
 			})
 		};
@@ -44,7 +44,9 @@ define(['utils','ludum-constants','ludum-collision','vector'],function(utils,con
 				if (!p) { return utils.deepClone(player); }
 				return {
 					clientid: player.clientid,
-					status: (player && player.status) || (p && (Vector.distanceBetween(minigame.balls[0].x,minigame.balls[0].y, p.x,p.y) < 40))
+					status: player.status && !minigame.balls.some(function(ball) {
+						return Vector.distanceBetween(ball.x,ball.y, p.x,p.y) < 40;
+					})
 				};
 			})
 		};
@@ -60,7 +62,7 @@ define(['utils','ludum-constants','ludum-collision','vector'],function(utils,con
 	}
 
 	function getTitle(minigame) {
-		return 'Touch the red ball';
+		return 'Avoid all balls!';
 	}
 
 	function drawMinigame(minigame) {

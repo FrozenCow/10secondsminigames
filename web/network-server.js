@@ -99,7 +99,7 @@ define(['./utils'],function(utils) {
 				this.sendReset();
 			}
 		} else {
-			this.server.messageHandlers[msg.type].call(this,msg);
+			(this.server.messageHandlers[msg.type] || utils.identity).call(this,msg);
 		}
 	}
 

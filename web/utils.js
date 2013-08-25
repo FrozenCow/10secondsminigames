@@ -22,6 +22,9 @@ define([],function() {
 			throw new Error('Assertion failed');
 		}
 	}
+	function identity(v) {
+		return v;
+	}
 	function deepClone(val) {
 		if (val === null) {
 			return val;
@@ -58,7 +61,7 @@ define([],function() {
 	}
 	function hashCode(str) {
 		var hash = 0, i, c;
-		if (str.length == 0) {
+		if (str.length === 0) {
 			return hash;
 		}
 		for (i = 0, l = str.length; i < l; i++) {
@@ -129,6 +132,57 @@ define([],function() {
 	}
 
 
+	function random(seed) {
+		var s = seed*21069.85449297633;
+		return (Math.cos(77916.9690067824+s*s)+1)*0.5;
+	}
+
+	function randomInt(seed,max) {
+		return Math.floor(random(seed)*max);
+	}
+
+	function randomSpeed(seed,min,max) {
+		var r = (random(seed)-0.5)*2*(max-min);
+		return r > 0 ? r+min : r-min;
+	}
+
+	function randomElement(seed,arr) {
+		console.log(seed,random(seed),arr.length,Math.floor(random(seed)*arr.length));
+		return arr[Math.floor(random(seed)*arr.length)];
+	}
+
+	function repeat(fn,count) {
+		var arr = new Array(count);
+		for(var i=0;i<count;i++) {
+			arr[i] = fn(i);
+		}
+		return arr;
+	}
+
+	function swap(arr,ia,ib) {
+		var v = arr[ia];
+		arr[ia] = arr[ib];
+		arr[ib] = v;
+	}
+
+	function shuffle(arr,seed) {
+		var r = arr.map(identity);
+		for(var i=arr.length-1;i>=0;i--) {
+			var ri = randomInt(seed+i,i);
+			swap(r,ri,i);
+		}
+		return r;
+	}
+
+	function arrayToObject(arr,keyfn,valuefn) {
+		valuefn = valuefn || identity;
+		var obj = {};
+		for(var i=0;i<arr.length;i++) {
+			obj[keyfn(arr[i])] = valuefn(arr[i]);
+		}
+		return obj;
+	}
+
 	return {
 		debug: debug,
 		findIndex: findIndex,
@@ -136,9 +190,18 @@ define([],function() {
 		remove: remove,
 		extend: extend,
 		assert: assert,
+		identity: identity,
 		deepClone: deepClone,
 		hashCode: hashCode,
 		JSONstringify: JSONstringify,
-		JSONparse: JSONparse
+		JSONparse: JSONparse,
+		random: random,
+		randomSpeed: randomSpeed,
+		randomElement: randomElement,
+		randomInt: randomInt,
+		repeat: repeat,
+		swap: swap,
+		shuffle: shuffle,
+		arrayToObject: arrayToObject
 	};
 });

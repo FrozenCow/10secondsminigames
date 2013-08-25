@@ -1,12 +1,12 @@
 define(['platform','game','vector','staticcollidable','linesegment','editor','required','state','level','mouse','collision','keyboard','quake','resources','graphics',
 		'simulator','jsonwebsocketmessenger','network-client','ludum'
 	],function(platform,Game,Vector,StaticCollidable,LineSegment,editor,required,state,level,mouse,collision,keyboard,quake,resources,Graphics,
-		Simulator,JsonWebsocketMessenger,NetworkClient,game
+		Simulator,JsonWebsocketMessenger,NetworkClient,ludumGame
 	) {
 	var t = new Vector(0,0);
 	var t2 = new Vector(0,0);
 	var rs = {
-		'images': [],
+		'images': ['ball','box','check','fault','happy','sad'],
 		'audio': []
 	};
 
@@ -124,13 +124,40 @@ define(['platform','game','vector','staticcollidable','linesegment','editor','re
 			disable: disable
 		};
 		var messenger = new JsonWebsocketMessenger(ws);
-		var simulator = new Simulator(game);
+		var simulator = new Simulator(ludumGame);
 		var networkClient = new NetworkClient(messenger,simulator);
 
 		var playernames = {};
-		var playernameInput = document.createElement('input');
-		playernameInput.onchange = function() { setName(playernameInput.value); };
-		document.body.appendChild(playernameInput);
+
+		// HACK
+		ludumGame.draw.playernames = playernames;
+		ludumGame.draw.images = images;
+
+		var playername = document.getElementById('playername');
+		playername.onclick = function() {
+			playernameInput.value = playername.innerText;
+			playername.style.display = 'none';
+			playernameInput.style.display = 'inline';
+			playernameInput.focus();
+			playernameInput.select();
+		};
+		var playernameInput = document.getElementById('playernameInput');
+		playernameInput.onkeydown = function(event) {
+			if (event.keyCode === 13 && playernameInput.value !== '') {
+				setName(playernameInput.value);
+				playername.innerText = playernameInput.value;
+				playernameInput.style.display = 'none';
+				playername.style.display = 'inline';
+			}
+		};
+		var messagesBox = document.getElementById('messagesBox');
+		var sendMessageBox = document.getElementById('sendMessageBox');
+		sendMessageBox.onkeydown = function(event) {
+			if (event.keyCode === 13 && sendMessageBox.value !== '') {
+				chat(sendMessageBox.value);
+				sendMessageBox.value = '';
+			}
+		};
 
 		messenger.onclose = function() {
 			networkClient.stop();
@@ -145,16 +172,33 @@ define(['platform','game','vector','staticcollidable','linesegment','editor','re
 			});
 		}
 
+		function chat(msg) {
+			messenger.send({
+				type: 'chat',
+				text: msg
+			});
+		}
+
 		function getPlayer() {
 			return simulator.getCurrentState().players.filter(function(player) {
-				return player.clientid === networkClient.clientid
+				return player.clientid === networkClient.clientid;
 			})[0];
 		}
 
 		// Hook game-specific message handlers.
 		(function(h) {
 			h['setname'] = function(msg) {
+				if (msg.clientid === networkClient.clientid) {
+					playername.innerText = msg.name;
+				}
 				playernames[msg.clientid] = msg.name;
+			};
+			h['chat'] = function(msg) {
+				console.log('Received chat', msg);
+				var line = document.createElement('div');
+				line.innerText = playernames[msg.clientid] + ': ' + msg.text;
+				messagesBox.appendChild(line);
+				messagesBox.scrollTop = messagesBox.scrollHeight;
 			};
 			h['connect'] = function(msg) {
 				simulator.insertEvent(msg.frame,{
@@ -247,7 +291,7 @@ define(['platform','game','vector','staticcollidable','linesegment','editor','re
 
 		function draw(graphics) {
 			var state = simulator.getCurrentState();
-			game.draw(graphics, state);
+			ludumGame.draw(graphics, state);
 		}
 		return me;
 	}

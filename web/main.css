@@ -4,7 +4,7 @@
 
 body {
 	margin: 0px;
-	overflow: hidden;
+	/*overflow: hidden;*/
 	font-family:arial;
 	font-size:15px;
 }
@@ -21,6 +21,8 @@ body {
 	height: 600px;
 }
 .overlay { z-index: 999; }
+
+canvas { background-image: url('assets/background.png'); }
 
 button:first-child {
 	margin-top: 0px;
@@ -106,4 +108,28 @@ button:active, .button:active {
 .sharebox button {
 	display: block;
 	float: right;
+}
+
+#messageDialog {
+	width: 100%;
+	border-radius: 0 0 10px 10px;
+	border: 1px solid gray;
+}
+
+#messagesBox {
+	height: 100px;
+	overflow: auto;
+	margin: 5px 10px;
+	border-bottom: 1px solid gray;
+}
+
+#playername {
+	cursor: pointer;
+}
+
+#sendMessageBox {
+	display: block;
+	margin: 5px 10px;
+	border: 0px;
+	width: 700px;
 }

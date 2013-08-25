@@ -32,11 +32,13 @@ function createRoom(name) {
 	networkServer.messageHandlers['up'] = handleKeyMsg;
 	networkServer.messageHandlers['down'] = handleKeyMsg;
 	networkServer.messageHandlers['setname'] = handleSetname;
+	networkServer.messageHandlers['chat'] = handleChat;
 	var room = {
 		name: name,
 		simulator: simulator,
 		networkServer: networkServer
 	};
+	networkServer.onclientadded = onClientAdded.bind(room);
 	networkServer.onclientremoved = onClientRemoved.bind(room);
 	networkServer.onempty = onRoomEmpty.bind(room);
 
@@ -68,6 +70,16 @@ function createClientInRoom(ws,room) {
 
 	return client;
 }
+function onClientAdded(client) {
+	var room = this;
+	client.name = 'anonymous'+client.id;
+	this.networkServer.broadcast({
+		type: 'setname',
+		clientid: client.id,
+		name: client.name
+	});
+}
+
 function onClientRemoved() {
 	var room = this;
 	if (room.networkServer.clients.length > 0) {
@@ -135,7 +147,7 @@ function handleKeyMsg(msg) {
 }
 
 function handleSetname(msg) {
-	if (/^[a-zA-Z0-9_\-\.]{1,5}$/.test(msg.name)) {
+	if (typeof msg.name === 'string' && /^[a-zA-Z0-9_\-\.]{1,16}$/.test(msg.name)) {
 		// Name is accepted, send it to other clients.
 		this.name = msg.name;
 		this.broadcast({
@@ -149,6 +161,22 @@ function handleSetname(msg) {
 			type:'setname',
 			clientid:this.id,
 			name:this.name
+		});
+	}
+}
+
+function handleChat(msg) {
+	if (typeof msg.text === 'string' && msg.text.length < 300) {
+		console.log(this.id + ' ' + this.name + ' ' + msg.text);
+		this.broadcast({
+			type: msg.type,
+			clientid: this.id,
+			text: msg.text
+		});
+		this.messenger.send({
+			type:msg.type,
+			clientid:this.id,
+			text:msg.text
 		});
 	}
 }

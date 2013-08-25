@@ -29,6 +29,19 @@ define(function() {
 	p.rectangle = function(x,y,w,h) {
 		this.context.rect(x,y,w,h);
 	};
+	p.roundRectangle = function(x,y,w,h,r) {
+		var c = this.context;
+		c.beginPath();
+		c.moveTo(x+r,y);
+		c.lineTo(x+w-r,y);
+		c.arcTo(x+w,y, x+w,y+r, r);
+		c.lineTo(x+w,y+h-r);
+		c.arcTo(x+w,y+h, x+w-r,y+h, r);
+		c.lineTo(x+r,y+h);
+		c.arcTo(x,y+h, x,y+h-r, r);
+		c.lineTo(x,y+r);
+		c.arcTo(x,y, x+r,y, r);
+	};
 	p.polygon = function(points) {
 		this.context.beginPath();
 		if (points.length > 0) {
@@ -52,6 +65,14 @@ define(function() {
 	};
 	p.fillRectangle = function(x,y,w,h) {
 		this.context.fillRect(x,y,w,h);
+	};
+	p.strokeRoundRectangle = function(x,y,w,h,r) {
+		this.roundRectangle(x,y,w,h,r);
+		this.context.stroke();
+	};
+	p.fillRoundRectangle = function(x,y,w,h,r) {
+		this.roundRectangle(x,y,w,h,r);
+		this.context.fill();
 	};
 	p.strokeCircle = function(x,y,radius) {
 		this.circle(x,y,radius);
