@@ -8,6 +8,7 @@ is far from efficient, but it works (and kept working while making changes) with
 and with minimal network traffic.
 
 [Play the game](http://softwarebakery.com:8000/)
+
 [Ludum Dare entry](http://www.ludumdare.com/compo/ludum-dare-27/?action=preview&uid=8435)
 
 ## Installation
@@ -18,5 +19,5 @@ and with minimal network traffic.
 
     $ node index.js
     
-Open up a browser and navigate to http://localhost:8085/.
+Open up a browser and navigate to [http://localhost:8085/](http://localhost:8085/).
 
