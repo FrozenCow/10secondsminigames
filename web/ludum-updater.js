@@ -45,14 +45,14 @@ define(['./utils','./vector','./linesegment','ludum-constants','ludum-collision'
 		};
 	}
 
-	function updateMinigameState(gamestate,state,playercollisions) {
+	function updateMinigameState(gamestate,state,boxcollisions,playercollisions) {
 		if (state.time === 1) {
 			return initializePostgameState(gamestate);
 		}
 		return {
 			type: 'minigame',
 			time: state.time-1,
-			state: minigames[state.state.type].update(gamestate, state.state,playercollisions)
+			state: minigames[state.state.type].update(gamestate, state.state,boxcollisions,playercollisions)
 		};
 	}
 
@@ -181,19 +181,24 @@ define(['./utils','./vector','./linesegment','ludum-constants','ludum-collision'
 		var collisionLines = getCollisionLines(state);
 		var collisions = collision.handleCollision(state.players,collisionLines);
 		var boxcollisions = {};
+		var playercollisions = {};
 		collisions.forEach(function(pair) {
 			var player = pair[0];
 			var playerCollisions = pair[1];
 			boxcollisions[player.clientid] = [];
+			playercollisions[player.clientid] = [];
 			player.onground = playerCollisions.reduce(function(result,collision) {
 				if (collision.object.box !== undefined && collision.normal.dot(0,1) < 0) {
 					boxcollisions[player.clientid].push(collision.object);
+				}
+				if (collision.object.clientid !== undefined) {
+					playercollisions[player.clientid].push(collision.object.clientid);
 				}
 				return result || collision.normal.dot(0,1) < 0;
 			},false);
 		});
 
-		state.state = stateUpdaters[oldstate.state.type](oldstate, oldstate.state, boxcollisions);
+		state.state = stateUpdaters[oldstate.state.type](oldstate, oldstate.state, boxcollisions, playercollisions);
 		if (state.state.type !== oldstate.state.type) {
 			switch(state.state.type) {
 				case 'postgame':

@@ -72,7 +72,7 @@ function createClientInRoom(ws,room) {
 }
 function onClientAdded(client) {
 	var room = this;
-	client.name = 'anonymous'+client.id;
+	client.name = 'Anonymous'+(client.id+1);
 	this.networkServer.broadcast({
 		type: 'setname',
 		clientid: client.id,

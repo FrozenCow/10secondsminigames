@@ -132,6 +132,8 @@ define(['platform','game','vector','staticcollidable','linesegment','editor','re
 		// HACK
 		ludumGame.draw.playernames = playernames;
 		ludumGame.draw.images = images;
+		ludumGame.constants.playernames = playernames;
+		console.log(ludumGame.constants.playernames);
 
 		var playername = document.getElementById('playername');
 		playername.onclick = function() {

@@ -1,4 +1,4 @@
-define(['utils','ludum-updater','ludum-drawer'],function(utils,updater,drawer) {
+define(['utils','ludum-updater','ludum-drawer','ludum-constants'],function(utils,updater,drawer,constants) {
 
 	function init() {
 		return {
@@ -32,6 +32,7 @@ define(['utils','ludum-updater','ludum-drawer'],function(utils,updater,drawer) {
 		init: updater.init,
 		update: updater.update,
 		draw: drawer,
-		compareEvents: compareEvents
+		compareEvents: compareEvents,
+		constants: constants
 	};
 });
