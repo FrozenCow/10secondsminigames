@@ -165,9 +165,35 @@ define(['linesegment','vector'],function(LineSegment,Vector) {
 		return collidableCollisions;
 	}
 
+	function getPlayerCollisions(players,collisionLines) {
+		var boxcollisions = {};
+		var playercollisions = {};
+		var collisions = collision.handleCollision(players,collisionLines);
+		collisions.forEach(function(pair) {
+			var player = pair[0];
+			var playerCollisions = pair[1];
+			boxcollisions[player.clientid] = [];
+			playercollisions[player.clientid] = [];
+			player.onground = playerCollisions.reduce(function(result,collision) {
+				if (collision.object.box !== undefined && collision.normal.dot(0,1) < 0) {
+					boxcollisions[player.clientid].push(collision.object);
+				}
+				if (collision.object.clientid !== undefined) {
+					playercollisions[player.clientid].push(collision.object.clientid);
+				}
+				return result || collision.normal.dot(0,1) < 0;
+			},false);
+		});
+		return {
+			boxcollisions: boxcollisions,
+			playercollisions: playercollisions
+		};
+	}
+
 	return {
 		createBox: createBox,
 		handleLineCollision: handleLineCollision,
-		handleCollision: handleCollision
+		handleCollision: handleCollision,
+		getPlayerCollisions: getPlayerCollisions
 	};
 });

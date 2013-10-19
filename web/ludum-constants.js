@@ -1,6 +1,6 @@
-define(['vector','ludum-collision'],function(Vector,collision) {
+define(['vector','physics'],function(Vector,physics) {
 	return {
-		outerbox: collision.createBox([
+		outerbox: physics.createBox([
 			new Vector(0,0),
 			new Vector(0,600),
 			new Vector(800,600),

@@ -183,6 +183,14 @@ define([],function() {
 		return obj;
 	}
 
+	function createLookup(arr,keyfn) {
+		var r = {};
+		for(var i=0;i<arr.length;i++) {
+			r[keyfn(arr[i])] = arr[i];
+		}
+		return r;
+	}
+
 	return {
 		debug: debug,
 		findIndex: findIndex,
@@ -202,6 +210,7 @@ define([],function() {
 		repeat: repeat,
 		swap: swap,
 		shuffle: shuffle,
-		arrayToObject: arrayToObject
+		arrayToObject: arrayToObject,
+		createLookup: createLookup
 	};
 });

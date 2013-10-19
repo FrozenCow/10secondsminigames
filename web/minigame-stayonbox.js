@@ -1,4 +1,4 @@
-define(['utils','ludum-constants','ludum-collision','vector'],function(utils,constants,collision,Vector) {
+define(['utils','ludum-constants','physics','vector'],function(utils,constants,physics,Vector) {
 
 	function initializeMinigame(gamestate) {
 		var f = gamestate.frame;
@@ -58,7 +58,7 @@ define(['utils','ludum-constants','ludum-collision','vector'],function(utils,con
 			y: y-r,
 			w: r*2,
 			h: r*2,
-			collision: collision.createBox([
+			collision: physics.createBox([
 				new Vector(x-r,y-r),
 				new Vector(x+r,y-r),
 				new Vector(x+r,y+r),

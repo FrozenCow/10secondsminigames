@@ -15,7 +15,7 @@ define(['./utils'],function(utils) {
 		this.messageHandlers = {
 			'syn': handleSyn,
 			'ack': handleAck,
-			'resetrequest': handleResetrequest
+			'debug': handleDebug
 		};
 		this.defaultgamerate = 1000*(1/30);
 		this.gameupdateTimeout = setTimeout(update.bind(this), this.defaultgamerate);
@@ -95,8 +95,8 @@ define(['./utils'],function(utils) {
 		if (msg.frame && msg.type !== 'syn' && this.server.simulator.isFramePrehistoric(msg.frame)) {
 			console.log('Detected message from prehistoric frame',msg.frame,'from client',this.id);
 			if (this.status === Client.STATUS_ACTIVE) {
-				console.log('Resetting client',this.id,'...');
-				this.sendReset();
+				console.log('Disconnect from client',this.id);
+				this.messenger.close();
 			}
 		} else {
 			(this.server.messageHandlers[msg.type] || utils.identity).call(this,msg);
@@ -116,9 +116,8 @@ define(['./utils'],function(utils) {
 	function handleAck(msg) {
 		this.latency = msg.latency;
 	}
-	function handleResetrequest(msg) {
-		console.log('!RESETREQUEST: from client',this.id);
-		this.sendReset();
+	function handleDebug(msg) {
+		console.log(msg);
 	}
 	function handleDisconnect() {
 		var simulator = this.server.simulator;
@@ -145,27 +144,6 @@ define(['./utils'],function(utils) {
 				if (other === this) { continue; }
 				other.messenger.send(msg);
 			}
-		};
-		p.sendReset = function() {
-			console.log('!SENDRESET: to client',this.id,'to frame',this.server.simulator.getCurrentFrame());
-			var simulator = this.server.simulator;
-			console.log('!SENDRESET: to client',
-				this.id,
-				'with frame',
-				simulator.getOldestState().frame,
-				'with',
-				events.length,
-				'events',
-				'to be reset to frame',
-				simulator.getCurrentFrame()
-			);
-			this.messenger.send({
-				type: 'reset',
-				currentframe: simulator.getCurrentFrame(),
-				state: simulator.getOldestState(),
-				events: simulator.getEvents()
-			});
-			this.status = Client.STATUS_ACTIVE;
 		};
 	})(Client.prototype);
 

@@ -1,4 +1,4 @@
-define(['utils','ludum-constants','ludum-collision','vector'],function(utils,constants,collision,Vector) {
+define(['utils','ludum-constants','physics','vector'],function(utils,constants,physics,Vector) {
 	function updateBall(ball) {
 		var r = {
 			x: ball.x + ball.vx,
@@ -7,7 +7,7 @@ define(['utils','ludum-constants','ludum-collision','vector'],function(utils,con
 			vy: ball.vy,
 			color: ball.color
 		};
-		collision.handleLineCollision(r, 20, 1, constants.outerbox, []);
+		physics.handleLineCollision(r, 20, 1, constants.outerbox, []);
 		return r;
 	}
 

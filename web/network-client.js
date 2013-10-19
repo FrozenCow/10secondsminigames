@@ -17,11 +17,15 @@ define(['./utils'],function(utils) {
 	function handleMessage(msg) {
 		if (msg.frame && this.simulator.isFramePrehistoric(msg.frame)) {
 			if (this.status === NetworkClient.STATUS_ACTIVE) {
-				console.log('!DESYNC: got prehistoric frame',msg.frame,utils.JSONstringify(msg));
-				this.status = NetworkClient.STATUS_RESETTING;
 				this.messenger.send({
-					type: 'resetrequest'
+					type: 'debug',
+					content: {
+						prehistoricMessage: msg,
+						moments: this.simulator.moments,
+						futureEvents: this.simulator.futureEvents
+					}
 				});
+				window.location.reload();
 			}
 			return;
 		}

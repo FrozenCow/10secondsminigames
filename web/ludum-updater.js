@@ -1,4 +1,4 @@
-define(['./utils','./vector','./linesegment','ludum-constants','ludum-collision','ludum-minigames'],function(utils,Vector,LineSegment,constants,collision,minigames) {
+define(['./utils','./vector','./linesegment','ludum-constants','physics','ludum-minigames'],function(utils,Vector,LineSegment,constants,physics,minigames) {
 	function initializeGame() {
 		return {
 			frame: 0,
@@ -179,7 +179,7 @@ define(['./utils','./vector','./linesegment','ludum-constants','ludum-collision'
 
 		// Collision
 		var collisionLines = getCollisionLines(state);
-		var collisions = collision.handleCollision(state.players,collisionLines);
+		var collisions = physics.handleCollision(state.players,collisionLines);
 		var boxcollisions = {};
 		var playercollisions = {};
 		collisions.forEach(function(pair) {
