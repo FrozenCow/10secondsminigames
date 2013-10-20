@@ -14,18 +14,35 @@ define(['utils','ludum-constants','physics','vector'],function(utils,constants,p
 	function initializeMinigame(gamestate) {
 		var f = gamestate.frame;
 		var players = gamestate.players;
+		var colors = constants.colors.slice(0);
+		var colorNames = constants.colors.names.slice(0);
+		function randomColor(seed) {
+			var colorIndex;
+			if (colorNames.length > 0) {
+				var colorNameIndex = utils.randomInt(seed,colorNames.length);
+				var colorName = colorNames.splice(colorNameIndex,1)[0];
+				var color = constants.colors[colorName];
+				colorIndex = colors.indexOf(color);
+				colors.splice(colorIndex,1);
+				return color;
+			} else {
+				colorIndex = utils.randomInt(seed,colors.length);
+				return colors[colorIndex];
+			}
+		}
+		var ballCount = 20+utils.randomInt(f,20);
 		return {
 			type: 'touchtheball',
 			balls: utils.repeat(function(i) {
-				var b = f+i*4;
+				var seed = f+i*5;
 				return {
-					x: utils.random(b+0)*800,
-					y: utils.random(b+1)*400,
-					vx: utils.randomSpeed(b+2,5,10),
-					vy: -Math.abs(utils.randomSpeed(b+3,5,10)),
-					color: constants.colors[i]
+					x: utils.random(seed+0)*800,
+					y: utils.random(seed+1)*400,
+					vx: utils.randomSpeed(seed+2,5,10),
+					vy: -Math.abs(utils.randomSpeed(seed+3,5,10)),
+					color: randomColor(seed)
 				};
-			},20),
+			},ballCount),
 			players: players.map(function(player) {
 				return {
 					clientid: player.clientid,
@@ -60,7 +77,7 @@ define(['utils','ludum-constants','physics','vector'],function(utils,constants,p
 	}
 
 	function getTitle(minigame) {
-		return 'Touch the red ball';
+		return 'Touch the '+constants.colors.names[minigame.balls[0].color]+' ball';
 	}
 
 	function drawMinigame(minigame) {
