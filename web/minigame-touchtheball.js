@@ -25,10 +25,14 @@ define(['utils','ludum-constants','physics','vector'],function(utils,constants,p
 				colorIndex = colors.indexOf(color);
 				colors.splice(colorIndex,1);
 				return color;
-			} else {
-				colorIndex = utils.randomInt(seed,colors.length);
-				return colors[colorIndex];
 			}
+			if (colors.length === 0) {
+				colors = constants.colors.slice(0).filter(function(color) {
+					return !constants.colors.names[color];
+				});
+			}
+			colorIndex = utils.randomInt(seed,colors.length);
+			return colors.splice(colorIndex,1)[0];
 		}
 		var ballCount = 20+utils.randomInt(f,20);
 		return {
