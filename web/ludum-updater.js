@@ -25,8 +25,13 @@ define(['./utils','./vector','./linesegment','ludum-constants','physics','ludum-
 		}
 	}
 
-	function pickMinigameType(frame) {
-		return utils.randomElement(frame,Object.keys(minigames));
+	function pickMinigameType(gamestate) {
+		var seed = gamestate && gamestate.frame || 0;
+		var availableMinigames = Object.keys(minigames).filter(function(name) {
+			var minigame = minigames[name];
+			return minigame.isAvailable ? minigame.isAvailable(gamestate) : true;
+		});
+		return utils.randomElement(seed,availableMinigames);
 	}
 
 	function getCollisionLines(gamestate) {
@@ -76,7 +81,7 @@ define(['./utils','./vector','./linesegment','ludum-constants','physics','ludum-
 	}
 
 	function initializePregameState(gamestate) {
-		var minigameType = pickMinigameType(gamestate && gamestate.frame || 0);
+		var minigameType = pickMinigameType(gamestate);
 		var minigameState = minigames[minigameType].initialize(gamestate);
 		return {
 			type: 'pregame',

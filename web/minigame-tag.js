@@ -110,6 +110,9 @@ define(['utils','ludum-constants','physics','vector'],function(utils,constants,p
 	var collisionlines = getCollisionLines(boxes);
 
 	return {
+		isAvailable: function(game) {
+			return game.players.length > 1;
+		},
 		initialize: initializeMinigame,
 		update: updateMinigame,
 		getScores: getScores,
