@@ -83,10 +83,28 @@ define(['ludum-minigames'],function(minigames) {
 		//this.fillText(JSON.stringify(state), 5, 20);
 	}
 
+	function squeeze(x,y,vx,vy,f) {
+		this.context.save();
+		this.context.translate(x, y);
+		var angle = Math.atan2(vy, vx);
+		this.context.rotate(angle);
+		this.context.scale(1.05,0.95);
+		this.context.rotate(-angle);
+		this.context.translate(-x, -y);
+
+		var r = f.bind(this)();
+		
+		this.context.restore();
+
+		return r;
+	}
+
 	function drawBall(ball) {
-		this.fillStyle(ball.color);
-		this.fillCircle(ball.x, ball.y, 20);
-		this.drawCenteredImage(draw.images.ball,ball.x,ball.y);
+		this.squeeze(ball.x,ball.y,ball.vx,ball.vy,function() {
+			this.fillStyle(ball.color);
+			this.fillCircle(ball.x, ball.y, 20);
+			this.drawCenteredImage(draw.images.ball,ball.x,ball.y);
+		});
 	}
 	function drawBox(box,color) {
 		this.fillStyle(color);
@@ -125,6 +143,7 @@ define(['ludum-minigames'],function(minigames) {
 		stateDrawers[gamestate.state.type].call(this, gamestate, gamestate.state);
 	}
 	var ludumGraphics = {
+		squeeze: squeeze,
 		drawBall: drawBall,
 		drawBox: drawBox,
 		drawPlayer: drawPlayer,
