@@ -50,26 +50,18 @@ define(['utils','ludum-constants','physics','vector','minigameutils'],function(u
 		return 'Stand on the red box';
 	}
 
-	function createBoxes() {
-		return minigameutils.createBoxRows([
-			2, 3, 2, 3, 6
-		]);
-	}
-
-	function getCollisionLines(boxes) {
-		return boxes.reduce(function(lines,box) {
-			return lines.concat(box.collision);
-		},[]);
-	}
-
 	function drawMinigame(minigame) {
 		boxes.forEach(function(box) {
 			this.drawBox.call(this, box, minigame.boxes[box.name].color);
 		}.bind(this));
 	}
 
-	var boxes = createBoxes();
-	var collisionlines = getCollisionLines(boxes);
+	var boxes = minigameutils.createBoxRows([
+		2, 3, 2, 3, 6
+	]);
+	var collisionlines = boxes.reduce(function(lines,box) {
+		return lines.concat(box.collision);
+	},[]);
 
 	return {
 		initialize: initializeMinigame,
