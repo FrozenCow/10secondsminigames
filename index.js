@@ -212,7 +212,7 @@ app.ws.usepath('/rooms',function(req,next) {
 	roomWatchers.push(messenger);
 });
 
-app.listen(8085);
+app.listen(process.env.PORT || 5000);
 
 function update() {
 	var tf = simulator.getCurrentMoment();
